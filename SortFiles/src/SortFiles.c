@@ -121,6 +121,7 @@ void populate() {
 		case 3:
 			if (!(symb >= '0' && symb <= '9')) {
 				state = 0;
+
 			}
 
 			break;
