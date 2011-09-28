@@ -136,7 +136,8 @@ void populate() {
 		struct stat st;
 		uk_symb=0;
 		if (stat(filename, &st) == -1) {
-			fprintf(stderr, "can't stat file %s", filename);
+			fprintf(stderr, "can't stat file %s\n", filename);
+
 			return EXIT_FAILURE;
 		}
 		file_size = st.st_size;
@@ -153,7 +154,8 @@ void populate() {
 		if(out=fopen(new_name,"wt"))
 		{
 			for(i=0;i<int_buffer_count;i++)
-				fprintf(out,"%d\n",int_buffer[i]);
+				if(fprintf(out,"%d\n",int_buffer[i])<0)
+					fprintf(stderr, "can't write to file\n");
 			fclose(out);
 		}
 		free(int_buffer);
