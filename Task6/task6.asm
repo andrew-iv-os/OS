@@ -24,8 +24,8 @@ int 0x13
 _run:
 	
 	bits 32
-	mov ax,8
-	mov cs,ax
+	;mov ax,8
+	;mov cs,ax
 	mov ax, 16
 	mov ds, ax
 	add ax,8
@@ -43,9 +43,9 @@ gdt_offset: dd gdt_0
 
 
 gdt_0: dq 0
-gdt_code: dq 0x004F9A000000FFFF
-gdt_data: dq 0x004F92000000FFFF
-gdt_stack: dq 0x004F92000000FFFF
+gdt_code: dq 0x00CF9A000000FFFF
+gdt_data: dq 0x00CF92000000FFFF
+gdt_stack: dq 0x00CF92000000FFFF
 gdt_tss:  dq 0x01408900000000FF
 message		db	'TEST',0
 times 510-($-$$) db 0
