@@ -1,8 +1,0 @@
-floppya: 1_44=image.bin, status=inserted
-boot: a
-log: bochsout.txt
-megs: 32
-romimage: file=/usr/share/bochs/BIOS-bochs-latest
-display_library: sdl
-#vgaromimage: /usr/share/bochs/VGABIOS-elpin-2.40
-cpu: ips=200000
