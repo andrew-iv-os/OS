@@ -1,0 +1,9 @@
+megs: 16
+floppya: 1_44=./img.bin, status=inserted
+boot: a
+display_library: sdl, option="gui_debug" 
+log: bochsout.txt
+mouse: enabled=0
+clock: sync=realtime
+cpu: ips=500000
+magic_break: enabled=1
