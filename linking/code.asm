@@ -1,5 +1,6 @@
 SECTION .text 
 global Fnc
+extern Prn
 
 Fnc:
 var_10 equ -10h
@@ -30,10 +31,10 @@ fldcw   [ebp+var_C]
 fistp   dword [ebp+var_10]
 fldcw   [ebp+var_A]
 mov     eax, [ebp+var_10]
+push eax
+call Prn
+pop eax
 leave
 retn
 
 v12e1 dq 1.2e1
-
-
-
