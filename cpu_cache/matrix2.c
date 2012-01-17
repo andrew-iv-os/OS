@@ -20,10 +20,13 @@
 #define X 0x400
 #define Y 0x400
 #define Z 0x400
+#define PAGE_MASK 0xfffffc0
+#define PAGE_OFFSET_MASK 0x3f
+#define PAGE_SIZE_LOG 6
 volatile int  matr1[X*Y];
 volatile int  matr2[Y*Z];
 volatile int  matr3[X*Z];
-#define GET_ADDR(x,y,bX) ((y&0xfffffc0)<<bX<<6)+((x&0xfffffc0)<<6)+((y&0x3f)<<6)+(x&0x3f)
+#define GET_ADDR(x,y,bX) ((y& PAGE_MASK)<<bX<<PAGE_SIZE_LOG)+((x& PAGE_MASK)<<PAGE_SIZE_LOG)+((y&PAGE_OFFSET_MASK)<<PAGE_SIZE_LOG)+(x&PAGE_OFFSET_MASK)
 int main()
 {
 int i,o,j;
