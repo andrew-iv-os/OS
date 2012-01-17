@@ -90,9 +90,30 @@ mov ah, 02h
 mov bx, MYFILE
 mov cx, 0002h
 int 0x13
-mov di,MYFILE
-call crc32
-mov [current_crc],Edx
+	mov edx,0xFFFFFFFF
+	mov si,MYFILE
+	mov cx,end2 - MYFILE
+
+	_lp1:
+		xor eax,eax
+		lodsb	
+		shl eax,8
+		xor eax,edx
+		and eax,0x000000FF
+		push cx
+		mov cx,8
+		_lp2:
+		shr eax,1
+		jnc _if1
+		xor eax,0xEDB88320
+		_if1:
+		loop _lp2
+		shr edx,8
+		xor edx,eax
+		pop cx
+	loop _lp1
+xor edx,0xFFFFFFFF
+mov [OurCRC],Edx
 cmp edx,[OrigCRC]
 ;jnz _end
 mov ax, 0x1301
@@ -106,53 +127,24 @@ _end:
 mov ax, 0x1301
 mov bx, 0x0007
 mov cx, 4
-mov bp, current_crc
+mov bp, OurCRC
 int 0x10
 cli
 hlt
 
 
 crc32:
-	push cx
-	push bx
-	push dx
-	push si
+	push ecx
+	push ebx
+	push edx
+	push esi
 	std
 
-	%%define poly_low 0x8320
-    %%define poly_high 0xedb8
-    mov cx, %(len)d
-	mov ax, [current_crc + 2]
-	mov bx, [current_crc]
-	xor ax, byte -1
-	xor bx, byte -1
-
-; polynom starts at ds:di, and is scanned by (bl bh : al ah) = (low : high)
-.crc32_loop:
-	xor bl, [di]
-	inc di
-	push cx
-	mov cx, 8
-.crc32_1b_loop:
-	shr ax, 1
-	rcr bx, 1
-	jnc .L0
-	xor bx, poly_low
-	xor ax, poly_high
-.L0:
-	loop .crc32_1b_loop
-	pop cx
-	loop .crc32_loop
-	pop ds
-	xor ax, byte -1
-	xor bx, byte -1
-	mov [current_crc + 2], ax
-	mov [current_crc + 0], bx
-
-	pop si
-	pop dx
-	pop bx
-	pop cx
+	mov eax,edx
+	pop esi
+	pop edx
+	pop ebx
+	pop ecx
 ret
 
 itoa:
@@ -162,7 +154,7 @@ itoa:
 SectorsToLoad:
 db %(sectors)d
 OrigCRC: dd %(crc)d
-current_crc: dd 0xffffffff
+OurCRC: dd %(crc)d
 times 510-($-$$) db 0
 db 0x55, 0xaa
 MYFILE: db %(data)s
