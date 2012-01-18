@@ -47,32 +47,42 @@ ISR_ERRCODE   12
 
 extern isr13_handler
 
+extern bad_loop
+
 global isr13
 isr13:
-	pusha
-	
+	pusha	
     mov ax, ds               ; Lower 16-bits of eax = ds.
     push eax                 ; save the data segment descriptor
-
-    mov ax, 0x10  ; load the kernel data segment descriptor
+    mov ax, 0x18  ; load the kernel data segment descriptor
     mov ds, ax
     mov es, ax
     mov fs, ax
     mov gs, ax
+    mov ss, ax
 
-    call isr13_handler
+    call isr13_handler    
+    
+    
+   .spin:
+   in  al, 0x64
+   and al, 0x01
+   jz  .spin
+ 
+   ;read scancode
+   in  al, 0x60
+   ;Now we tell the first PIC that the IRQ is handled
+   mov al, 0x20
+   out 0x20, al    
 
-    pop ebx        ; reload the original data segment descriptor
+    mov bx,0x10        ; reload the original data segment descriptor
     mov ds, bx
     mov es, bx
     mov fs, bx
+    mov ss,bx
     mov gs, bx
-	
-	
-	popa
-	add esp, 4 
-    sti
-    iret
+	mov esp, 0xffff
+	call bad_loop
 
 
 ISR_ERRCODE   14

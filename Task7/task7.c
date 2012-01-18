@@ -4,18 +4,33 @@
 
 idt_entry_t idt_entries[256];
 idt_ptr_t   idt_ptr;
+#define LCM_A 69069
+#define LCM_C 5
+
+u32int random; 
 
 
 void main(){
 	
 	init_idt();
-	monitor_clear();
+	random = *((int*)0xB8000);
+	monitor_clear();	
 	monitor_write("TASK7 STARTED! \n");	
-	*((u8int *)0x7FFFFFFF)= 4;
-	
-	
-	
+	bad_loop();
 }
+void bad_loop()
+{
+	int trash;
+	while(1){
+		trash = *((int*)random);
+		random = LCM_A + LCM_C * random;
+	}
+}
+
+	
+	
+	
+
 
 void init_idt()
 {
