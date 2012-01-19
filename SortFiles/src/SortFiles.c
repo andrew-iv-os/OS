@@ -11,17 +11,22 @@
 #include <errno.h>
 #include <string.h>
 
-#define ARR_SIZE 0x1000000
+#define ARR_SIZE 0x1000
 #define BF_SIZE ARR_SIZE*sizeof(int)
 
 u_char buffer[BF_SIZE];
-int *int_buffer;
-int int_buffer_count;
-off_t file_size;
-int uk_symb;
-int input_handle;
-char is_availible = 1;
-int read_count;
+
+static struct vector{
+	int *arr;
+	int count;
+	size_t capacity;
+} int_arr;
+
+static off_t file_size;
+static int uk_symb;
+static int input_handle;
+static char is_availible = 1;
+static int read_count;
 
 inline u_char get_next_symb(u_char buffer[], int size) {
 	is_availible = 1;
@@ -30,7 +35,7 @@ inline u_char get_next_symb(u_char buffer[], int size) {
 		if (read_count == 0) {
 			is_availible = 0;
 			if (uk_symb != file_size) {
-				fprintf(stderr, "can't read file o end");
+				fprintf(stderr, "can't read file till the end");
 			}
 			return 0;
 		}
@@ -54,15 +59,29 @@ void array_sort(int arr[], int count) {
 }
 
 void int_buffer_add(int val) {
-	int_buffer[int_buffer_count++] = val;
+	
+	if(int_arr.count >= int_arr.capacity){
+				int_arr.capacity = int_arr.capacity<<1;
+				int_arr.arr = (int*)realloc(int_arr.arr, int_arr.capacity*sizeof(int));
+				if( int_arr.arr == 0 )
+				{
+					fprintf(stderr,"malloc failed\n");
+					exit(1);
+				}
+			}
+	int_arr.arr[int_arr.count++] = val;
 
 }
 
-void populate() {
+void populate()
+/*
+ * Чтение делаю ручками потому что нужно обрабатывать слишком большие числа а также мусор в файлах
+ */
+ 
+ {
 	long long now = 0;
-	int_buffer_count=0;
-			uk_symb=0;
-			is_availible=1;
+	uk_symb=0;
+	is_availible=1;
 
 	int state = 0;
 	char min = 1;
@@ -73,7 +92,6 @@ void populate() {
 	 3: игнорить число
 	 */
 	while (is_availible) {
-
 		u_char symb = get_next_symb(buffer, BF_SIZE);
 		if(!is_availible)
 			break;
@@ -89,7 +107,7 @@ void populate() {
 				state = 2;
 			} else {
 
-				fprintf(stderr, "bad symbol %c at %d\n", symb, (int) uk_symb);
+				//fprintf(stderr, "bad symbol %c at %d\n", symb, (int) uk_symb);
 			}
 			break;
 		case 1:
@@ -99,9 +117,9 @@ void populate() {
 				state = 2;
 				now = now * 10 + symb - '0';
 				if (now & 0xFFFF80000000) {
-					fprintf(stderr,
+				/*	fprintf(stderr,
 							"value in bad range at %d\n, ignoring next digits",
-							(int) uk_symb);
+							(int) uk_symb);*/
 					now = now / 10;
 					int_buffer_add(now * min);
 					state = 3;
@@ -112,9 +130,9 @@ void populate() {
 					int_buffer_add(now * min);
 					state = 0;
 				}
-				if (!isblank(symb))
-					fprintf(stderr, "bad symbol %c at %d\n", symb,
-							(int) uk_symb);
+				//if (!isblank(symb));
+					/*fprintf(stderr, "bad symbol %c at %d\n", symb,
+							(int) uk_symb);*/
 			}
 
 			break;
@@ -123,7 +141,6 @@ void populate() {
 				state = 0;
 
 			}
-
 			break;
 		}
 
@@ -132,46 +149,72 @@ void populate() {
 
 
 
-	int sortfile(char *filename) {
+	int addfile(char *filename) {
 		struct stat st;
 		uk_symb=0;
 		if (stat(filename, &st) == -1) {
 			fprintf(stderr, "can't stat file %s\n", filename);
-
 			return EXIT_FAILURE;
 		}
 		file_size = st.st_size;
-		input_handle = open(filename, O_RDONLY);
-		int_buffer = malloc(st.st_size / 2 + 1);
-		int_buffer_count=0;
+		input_handle = open(filename, O_RDONLY);		
 		populate();
 		close(input_handle);
-		array_sort(int_buffer,int_buffer_count);
-		int i;
-		char *new_name=malloc(strlen(filename)+10);
-		sprintf(new_name,"%s.sorted",filename);
-		FILE* out;
-		if(out=fopen(new_name,"wt"))
-		{
-			for(i=0;i<int_buffer_count;i++)
-				if(fprintf(out,"%d\n",int_buffer[i])<0)
-					fprintf(stderr, "can't write to file\n");
-			fclose(out);
-		}
-		free(int_buffer);
-		free(new_name);
-
-		/*u_char *barray=malloc(st.st_size);
-		 int *iarray = malloc();*/
-
 		return 0;
 	}
+	
+	static FILE * out;	
+	void printall()
+	{
+		int i;
+		for(i=0;i<int_arr.count;i++)
+				if(fprintf(out,"%d\n",int_arr.arr[i])<0)
+					{
+						fprintf(stderr, "can't write to file\n");
+						exit(1);
+					}
+			
+	}
+	
 
 int main(int argc, char **argv) {
-
+		int_arr.arr = malloc(sizeof(int));
+		int_arr.count=0;
+		int_arr.capacity = 1;
+		char * out_file_name = 0;
 		int i;
-		for (i = 1; i < argc; i++) {
-			sortfile(argv[i]);
+		int read_output = 0;
+		int argn;
+		for (argn = 1; argn < argc; argn++) {
+			if (strcmp(argv[argn], "--output") == 0) {
+                read_output = 1;
+            } else {
+                if (read_output == 1) {
+					out_file_name = argv[argn];
+					
+                    read_output = 0;
+                } else {					
+                    addfile(argv[argn]);
+                    
+                }			
+			
+		}		
+	}
+	array_sort(int_arr.arr,int_arr.count);
+	
+		if(out_file_name == 0 || (out=fopen(out_file_name,"wt"))==0)
+		{
+			
+			out = stdout;
+			printall();
 		}
+		else
+		{				
+			printall();		
+			fclose(out);
+		}
+	
+		free(int_arr.arr);		
+				
 		return 0;
 	};
