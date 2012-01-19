@@ -26,7 +26,7 @@
 volatile int  matr1[X*X];
 volatile int  matr2[X*X];
 volatile int  matr3[X*X];
-#define GET_ADDR( x, y) ( (y & PAGE_MASK) << PAGES_PER_LINE_LOG2 << PAGE_SIZE_LOG4 ) + ( ( x & PAGE_MASK ) << PAGE_SIZE_LOG4 ) + ( ( y & PAGE_OFFSET_MASK ) << PAGE_SIZE_LOG4 ) + ( x & PAGE_OFFSET_MASK )
+#define GET_ADDR( x, y) ( (y & PAGE_MASK) << (PAGES_PER_LINE_LOG2 + PAGE_SIZE_LOG4) ) + ( ( x & PAGE_MASK ) << PAGE_SIZE_LOG4 ) + ( ( y & PAGE_OFFSET_MASK ) << PAGE_SIZE_LOG4 ) + ( x & PAGE_OFFSET_MASK )
 void mul(int *matr1,int *matr2,int *matr3)
 {
 	int i,o,j;
