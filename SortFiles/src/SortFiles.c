@@ -93,6 +93,11 @@ void int_buffer_add(int val) {
 	
 
 int main(int argc, char **argv) {
+		if(argc == 1)
+		{
+			puts("usage: ./a.out [file1] ... [fileN] [--output filename]\n");
+			exit(0);
+		}
 		int_arr.arr = malloc(sizeof(int));
 		int_arr.count=0;
 		int_arr.capacity = 1;
