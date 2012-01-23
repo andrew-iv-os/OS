@@ -20,8 +20,8 @@
 #include <stdio.h>
 #include <limits.h>
 #define X 0x400
-#define PAGE_MASK (~0x3f)
 #define PAGE_OFFSET_MASK 0x3f
+#define PAGE_MASK (~PAGE_OFFSET_MASK)
 #define PAGE_SIZE_LOG4 6
 #define PAGES_PER_LINE_LOG2 4
 volatile int  matr1[X*X];

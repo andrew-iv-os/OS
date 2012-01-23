@@ -110,6 +110,7 @@ ISR_NOERRCODE 31
 ; up for kernel mode segments, calls the C-level fault handler,
 ; and finally restores the stack frame.
 isr_common_stub:
-    add esp, 4     ; Cleans up the pushed error code and pushed ISR number
+    add esp, 2     ; Cleans up the pushed error code and pushed ISR number
+	; Да я там удалил закидывания номера прерывания так что к стэку -2
     sti
     iret           ; pops 5 things at once: CS, EIP, EFLAGS, SS, and ESP
