@@ -1,10 +1,3 @@
-;
-; interrupt.s -- Contains interrupt service routine wrappers.
-;                Based on Bran's kernel development tutorials.
-;                Rewritten for JamesM's kernel development tutorials.
-
-; This macro creates a stub for an ISR which does NOT pass it's own
-; error code (adds a dummy errcode byte).
 %macro ISR_NOERRCODE 1
   global isr%1
   isr%1:
@@ -82,6 +75,7 @@ isr13:
     mov ss,bx
     mov gs, bx
 	mov esp, 0xffff
+	sti
 	call bad_loop
 
 
@@ -110,7 +104,7 @@ ISR_NOERRCODE 31
 ; up for kernel mode segments, calls the C-level fault handler,
 ; and finally restores the stack frame.
 isr_common_stub:
-    add esp, 2     ; Cleans up the pushed error code and pushed ISR number
+    add esp, 2     ; Cleans up the pushed error code
 	; Да я там удалил закидывания номера прерывания так что к стэку -2
     sti
     iret           ; pops 5 things at once: CS, EIP, EFLAGS, SS, and ESP
