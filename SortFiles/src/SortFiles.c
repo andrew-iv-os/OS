@@ -54,14 +54,13 @@ void int_buffer_add(int val) {
 		struct stat st;
 		
 		
-		if (stat(filename, &st) == -1) {
-			fprintf(stderr, "can't stat file %s\n", filename);
-			return EXIT_FAILURE;
-		}
 		
 		
 		FILE *input_handle = fopen(filename, "rt");		
-		
+		if (input_handle == 0) {
+			fprintf(stderr, "can't open file %s\n", filename);
+			return EXIT_FAILURE;
+		}
 		int now;
 		int add_now=0;
 		
@@ -78,8 +77,7 @@ void int_buffer_add(int val) {
 		return 0;
 	}
 	
-	static FILE * out;	
-	void printall()
+	void printall(FILE * out)
 	{
 		int i;
 		for(i=0;i<int_arr.count;i++)
@@ -122,17 +120,17 @@ int main(int argc, char **argv) {
 	}
 	
 	array_sort(int_arr.arr,int_arr.count);
-	
+ FILE * out;	
 	
 		if(out_file_name == 0 || (out=fopen(out_file_name,"wt"))==0)
 		{
 			
 			out = stdout;
-			printall();
+			printall(out);
 		}
 		else
 		{				
-			printall();		
+			printall(out);		
 			fclose(out);
 		}
 	
